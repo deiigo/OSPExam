@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>模擬試験サイト - 試験</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- 試験画面 -->
+        <section id="exam-screen" class="screen active">
+            <div class="exam-container">
+                <!-- 左サイドバー：問題番号 -->
+                <aside class="question-sidebar">
+                    <div class="sidebar-header">
+                        <h3>問題一覧</h3>
+                        <div class="legend">
+                            <span class="legend-item answered">回答済</span>
+                            <span class="legend-item flagged">フラグ</span>
+                        </div>
+                    </div>
+                    <div class="question-numbers" id="question-numbers">
+                        <!-- JSで生成 -->
+                    </div>
+                    <div class="sidebar-footer">
+                        <button class="submit-btn" id="submit-exam">
+                            <span>採点する</span>
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- メインコンテンツ：問題表示 -->
+                <main class="question-main">
+                    <div class="question-header">
+                        <a href="index.html" class="back-link" id="exam-back-link">← ホームに戻る</a>
+                        <div class="exam-title" id="exam-title">模擬試験 1</div>
+                        <div class="timer-display" id="timer-display">
+                            <span class="timer-icon">⏱</span>
+                            <span id="timer-text">02:00:00</span>
+                        </div>
+                        <div class="question-progress">
+                            <span id="current-question-num">1</span> / <span id="total-questions">50</span>
+                        </div>
+                    </div>
+
+                    <div class="question-content">
+                        <div class="question-box">
+                            <div class="question-number-badge" id="question-badge">Q.1</div>
+                            <p class="question-text" id="question-text">問題文がここに表示されます</p>
+                        </div>
+
+                        <div class="choices-container" id="choices-container">
+                            <!-- JSで生成 -->
+                        </div>
+                    </div>
+
+                    <div class="question-footer">
+                        <div class="flag-container">
+                            <button class="flag-btn" id="flag-btn">
+                                <span class="flag-icon">🚩</span>
+                                <span class="flag-text">フラグを付ける</span>
+                            </button>
+                        </div>
+                        <div class="nav-buttons">
+                            <button class="nav-btn prev-btn" id="prev-btn">
+                                <span>← 前の問題</span>
+                            </button>
+                            <button class="nav-btn next-btn" id="next-btn">
+                                <span>次の問題 →</span>
+                            </button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </section>
+
+        <!-- 1問1答モード画面 -->
+        <section id="single-screen" class="screen">
+            <div class="single-container">
+                <div class="single-header">
+                    <a href="index.html" class="back-home-btn">← ホームに戻る</a>
+                    <div class="single-progress">
+                        問題 <span id="single-current">1</span> / <span id="single-total">150</span>
+                    </div>
+                </div>
+
+                <div class="single-content">
+                    <div class="single-question-box">
+                        <div class="question-number-badge" id="single-badge">Q.1</div>
+                        <p class="question-text" id="single-question-text">問題文</p>
+                    </div>
+
+                    <div class="single-choices" id="single-choices">
+                        <!-- JSで生成 -->
+                    </div>
+
+                    <div class="single-answer-area" id="single-answer-area" style="display: none;">
+                        <div class="answer-result" id="single-result"></div>
+                        <div class="correct-answer-text" id="single-correct-answer"></div>
+                    </div>
+                </div>
+
+                <div class="single-footer">
+                    <button class="answer-btn" id="show-answer-btn">解答を確認</button>
+                    <button class="next-single-btn" id="next-single-btn" style="display: none;">次の問題 →</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 結果画面 -->
+        <section id="result-screen" class="screen">
+            <div class="result-container">
+                <div class="result-header">
+                    <h1 class="result-title">試験結果</h1>
+                    <p class="result-exam-name" id="result-exam-name">模擬試験 1</p>
+                </div>
+
+                <div class="result-summary">
+                    <div class="chart-container">
+                        <canvas id="result-chart"></canvas>
+                    </div>
+                    <div class="score-details">
+                        <div class="score-item correct">
+                            <span class="score-label">正解</span>
+                            <span class="score-value" id="correct-count">0</span>
+                            <span class="score-unit">問</span>
+                        </div>
+                        <div class="score-item incorrect">
+                            <span class="score-label">不正解</span>
+                            <span class="score-value" id="incorrect-count">0</span>
+                            <span class="score-unit">問</span>
+                        </div>
+                        <div class="score-item percentage">
+                            <span class="score-label">正解率</span>
+                            <span class="score-value" id="percentage">0</span>
+                            <span class="score-unit">%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="result-details">
+                    <h2 class="details-title">問題別結果</h2>
+                    <div class="details-list" id="result-details-list">
+                        <!-- JSで生成 -->
+                    </div>
+                </div>
+
+                <div class="result-footer">
+                    <button id="download-excel-btn" class="excel-btn">
+                        📄 Excelで結果を保存
+                    </button>
+                    <a href="index.html" class="home-btn">ホームに戻る</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 問題詳細モーダル -->
+        <div class="modal-overlay" id="question-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modal-title">Q.1</h3>
+                    <button class="modal-close" id="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-question" id="modal-question">問題文</p>
+                    <div class="modal-choices" id="modal-choices">
+                        <!-- JSで生成 -->
+                    </div>
+                    <div class="modal-answer">
+                        <div class="answer-row">
+                            <span class="answer-label">あなたの回答:</span>
+                            <span class="answer-value" id="modal-user-answer">-</span>
+                        </div>
+                        <div class="answer-row">
+                            <span class="answer-label">正解:</span>
+                            <span class="answer-value correct" id="modal-correct-answer">-</span>
+                        </div>
+                        <div class="result-icon" id="modal-result-icon">⭕</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 採点確認ポップアップ -->
+        <div class="confirm-overlay" id="confirm-modal">
+            <div class="confirm-box">
+                <h3 class="confirm-title">試験を終了しますか？</h3>
+                <p class="confirm-message" id="confirm-message">
+                    未回答の問題がありません。<br>
+                    採点を行うと、試験が終了します。
+                </p>
+                <div class="confirm-buttons">
+                    <button class="confirm-btn cancel" id="confirm-cancel">キャンセル</button>
+                    <button class="confirm-btn submit" id="confirm-submit">採点する</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PDFレポート用隠しコンテナを削除 -->
+    </div>
+    </section>
+
+    <!-- 問題詳細モーダル -->
+    <div class="modal-overlay" id="question-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Q.1</h3>
+                <button class="modal-close" id="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-question" id="modal-question">問題文</p>
+                <div class="modal-choices" id="modal-choices">
+                    <!-- JSで生成 -->
+                </div>
+                <div class="modal-answer">
+                    <p class="your-answer">あなたの解答: <span id="modal-your-answer">A</span></p>
+                    <p class="correct-answer-modal">正解: <span id="modal-correct-answer">B</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 採点確認ポップアップ -->
+    <div class="confirm-overlay" id="confirm-modal">
+        <div class="confirm-box">
+            <div class="confirm-icon">📝</div>
+            <div class="confirm-title">採点しますか？</div>
+            <div class="confirm-message" id="confirm-message">採点を行うと、試験が終了します。</div>
+            <div class="confirm-buttons">
+                <button class="confirm-btn cancel" id="confirm-cancel">キャンセル</button>
+                <button class="confirm-btn submit" id="confirm-submit">採点する</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="js/questions.js"></script>
+    <script src="js/app.js"></script>
+</body>
+
+</html>

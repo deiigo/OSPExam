@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outsystems模擬試験サイト - ホーム</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Home画面 -->
+        <section id="home-screen" class="screen active">
+            <div class="home-content">
+                <h1 class="main-title">
+                    Outsystems模擬試験
+                </h1>
+                <p class="subtitle">試験モードを選択してください</p>
+
+                <div class="exam-selection">
+                    <h2 class="section-title">模擬試験を選択</h2>
+                    <div class="exam-buttons">
+                        <a href="exam.html?mode=exam1" class="exam-btn">
+                            <span class="exam-number">1</span>
+                            <span class="exam-label">模擬試験 1</span>
+                        </a>
+                        <a href="exam.html?mode=exam2" class="exam-btn">
+                            <span class="exam-number">2</span>
+                            <span class="exam-label">模擬試験 2</span>
+                        </a>
+                        <a href="exam.html?mode=exam3" class="exam-btn">
+                            <span class="exam-number">3</span>
+                            <span class="exam-label">模擬試験 3</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mode-selection">
+                    <h2 class="section-title">その他のモード</h2>
+                    <div class="mode-buttons">
+                        <a href="exam.html?mode=random" class="mode-btn random-btn">
+                            <span class="mode-icon">🔀</span>
+                            <span class="mode-label">ランダム出題</span>
+                            <span class="mode-desc">3つの試験からランダムに50問</span>
+                        </a>
+                        <a href="exam.html?mode=single" class="mode-btn single-btn">
+                            <span class="mode-icon">📖</span>
+                            <span class="mode-label">1問1答</span>
+                            <span class="mode-desc">1問ずつ確認しながら学習</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</body>
+
+</html>
