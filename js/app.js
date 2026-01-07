@@ -245,6 +245,14 @@ $(document).ready(function () {
         $('#question-badge').text(`Q.${index + 1}`);
         $('#question-text').text(question.question);
 
+        // 画像の表示制御
+        if (question.image) {
+            $('#question-image').attr('src', question.image);
+            $('#question-image-container').show();
+        } else {
+            $('#question-image-container').hide();
+        }
+
         const $choices = $('#choices-container');
         $choices.empty();
 
@@ -268,6 +276,19 @@ $(document).ready(function () {
             $('#flag-btn .flag-text').text('フラグを付ける');
         }
 
+        // ナビゲーションボタンの表示制御
+        if (index === 0) {
+            $('#prev-btn').css('visibility', 'hidden');
+        } else {
+            $('#prev-btn').css('visibility', 'visible');
+        }
+
+        if (index === state.questions.length - 1) {
+            $('#next-btn').css('visibility', 'hidden');
+        } else {
+            $('#next-btn').css('visibility', 'visible');
+        }
+
         updateQuestionNumbers();
     }
 
@@ -287,9 +308,11 @@ $(document).ready(function () {
 
         if (state.flags[idx]) {
             $(this).addClass('active');
+            $(this).find('.flag-icon i').removeClass('fa-regular').addClass('fa-solid'); // Solid icon
             $(this).find('.flag-text').text('フラグを外す');
         } else {
             $(this).removeClass('active');
+            $(this).find('.flag-icon i').removeClass('fa-solid').addClass('fa-regular'); // Regular icon
             $(this).find('.flag-text').text('フラグを付ける');
         }
 
@@ -319,6 +342,14 @@ $(document).ready(function () {
         $('#single-current').text(index + 1);
         $('#single-badge').text(`Q.${index + 1}`);
         $('#single-question-text').text(question.question);
+
+        // 画像の表示制御
+        if (question.image) {
+            $('#single-question-image').attr('src', question.image);
+            $('#single-question-image-container').show();
+        } else {
+            $('#single-question-image-container').hide();
+        }
 
         const $choices = $('#single-choices');
         $choices.empty();
@@ -355,9 +386,9 @@ $(document).ready(function () {
 
         const $result = $('#single-result');
         if (isCorrect) {
-            $result.text('⭕ 正解！').removeClass('incorrect').addClass('correct');
+            $result.html('<i class="fa-solid fa-circle-check"></i> 正解！').removeClass('incorrect').addClass('correct');
         } else {
-            $result.text('❌ 不正解').removeClass('correct').addClass('incorrect');
+            $result.html('<i class="fa-solid fa-circle-xmark"></i> 不正解').removeClass('correct').addClass('incorrect');
         }
 
         $('#single-correct-answer').html(`正解: <strong>${choiceLabels[question.correct]}</strong> - ${question.choices[question.correct]}`);
@@ -365,9 +396,9 @@ $(document).ready(function () {
         $('#single-choices .choice-item').each(function () {
             const val = parseInt($(this).find('input').val());
             if (val === question.correct) {
-                $(this).css('border-color', '#10b981').css('background', 'rgba(16, 185, 129, 0.2)');
+                $(this).css('border-color', '#00c853').css('background', 'rgba(0, 200, 83, 0.2)');
             } else if (val === userAnswer && !isCorrect) {
-                $(this).css('border-color', '#ef4444').css('background', 'rgba(239, 68, 68, 0.2)');
+                $(this).css('border-color', '#d50000').css('background', 'rgba(213, 0, 0, 0.2)');
             }
         });
 
@@ -466,8 +497,8 @@ $(document).ready(function () {
                 labels: ['正解', '不正解'],
                 datasets: [{
                     data: [correct, incorrect],
-                    backgroundColor: ['#22c55e', '#ef4444'],
-                    borderColor: ['#16a34a', '#dc2626'],
+                    backgroundColor: ['#00c853', '#d50000'],
+                    borderColor: ['#69f0ae', '#ff5252'],
                     borderWidth: 2
                 }]
             },
@@ -478,7 +509,7 @@ $(document).ready(function () {
                     legend: {
                         position: 'bottom',
                         labels: {
-                            color: '#f1f5f9',
+                            color: '#1a2332',
                             font: { size: 14, weight: 500 },
                             padding: 20
                         }
@@ -515,6 +546,14 @@ $(document).ready(function () {
         $('#modal-title').text(`Q.${idx + 1}`);
         $('#modal-question').text(question.question);
 
+        // 画像の表示制御
+        if (question.image) {
+            $('#modal-image').attr('src', question.image);
+            $('#modal-image-container').show();
+        } else {
+            $('#modal-image-container').hide();
+        }
+
         const $choices = $('#modal-choices');
         $choices.empty();
 
@@ -538,6 +577,16 @@ $(document).ready(function () {
 
         $('#modal-your-answer').text(userAnswer !== undefined ? choiceLabels[userAnswer] : '未回答');
         $('#modal-correct-answer').text(choiceLabels[question.correct]);
+
+        // 結果アイコンの更新
+        const $icon = $('#modal-result-icon');
+        const isCorrect = userAnswer === question.correct;
+
+        if (isCorrect) {
+            $icon.html('<i class="fa-solid fa-circle-check"></i>').removeClass('incorrect').addClass('correct');
+        } else {
+            $icon.html('<i class="fa-solid fa-circle-xmark"></i>').removeClass('correct').addClass('incorrect');
+        }
 
         $('#question-modal').addClass('active');
     });
@@ -618,5 +667,35 @@ $(document).ready(function () {
         else if (state.currentExam === 'single') fileName = `1問1答_${dateStr}.xlsx`;
 
         XLSX.writeFile(wb, fileName);
+    });
+
+    // =====================================
+    // 画像拡大機能
+    // =====================================
+
+    // 画像クリックでモーダル表示（動的要素対応）
+    $(document).on('click', '.question-image-container img', function () {
+        const src = $(this).attr('src');
+        $('#zoomed-image').attr('src', src);
+        $('#image-zoom-modal').addClass('active');
+    });
+
+    // 閉じるボタンクリックで非表示
+    $('.zoom-close').on('click', function () {
+        $('#image-zoom-modal').removeClass('active');
+    });
+
+    // モーダル背景クリックで非表示
+    $('#image-zoom-modal').on('click', function (e) {
+        if ($(e.target).is('#image-zoom-modal')) {
+            $(this).removeClass('active');
+        }
+    });
+
+    // ESCキーで非表示
+    $(document).on('keydown', function (e) {
+        if (e.key === 'Escape' && $('#image-zoom-modal').hasClass('active')) {
+            $('#image-zoom-modal').removeClass('active');
+        }
     });
 });

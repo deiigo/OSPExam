@@ -9,7 +9,7 @@ const examData = {
 const topics = [
     {
         category: "基本情報", questions: [
-            { q: "CPUの主な役割として正しいものはどれか", c: ["演算処理を行う", "データを長期保存する", "電源を供給する", "ネットワーク接続を行う"], a: 0 },
+            { q: "下図のアーキテクチャ構成において、緑色の「WEB SERVER」の主な役割として適切なものはどれか", c: ["ユーザーからのリクエストを処理する", "データを永続保存する", "負荷分散のみを行う", "ネットワーク接続を提供する"], a: 0, image: "images/sample_question.png" },
             { q: "1バイトは何ビットか", c: ["4ビット", "8ビット", "16ビット", "32ビット"], a: 1 },
             { q: "OSの役割として最も適切なものはどれか", c: ["文書作成", "ハードウェアとソフトウェアの仲介", "ウイルス対策", "データ圧縮"], a: 1 },
             { q: "RAMの特徴として正しいものはどれか", c: ["電源を切ってもデータが消えない", "読み取り専用", "揮発性メモリ", "磁気記憶装置"], a: 2 },
@@ -114,7 +114,8 @@ function generateQuestions() {
             category: topics[topicIndex].category,
             question: `【${topics[topicIndex].category}】${q.q}`,
             choices: [...q.c],
-            correct: q.a
+            correct: q.a,
+            image: q.image
         });
     }
 
@@ -135,7 +136,8 @@ function generateQuestions() {
             category: topics[topicIndex].category,
             question: `【${topics[topicIndex].category}】${q.q}`,
             choices: shuffledChoices,
-            correct: newCorrectIndex
+            correct: newCorrectIndex,
+            image: q.image
         });
     }
 
@@ -156,7 +158,8 @@ function generateQuestions() {
             category: topics[topicIndex].category,
             question: `【${topics[topicIndex].category}】${q.q}`,
             choices: shuffledChoices,
-            correct: newCorrectIndex
+            correct: newCorrectIndex,
+            image: q.image
         });
     }
 }
