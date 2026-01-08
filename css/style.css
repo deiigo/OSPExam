@@ -1364,12 +1364,16 @@ body::before {
     .question-sidebar {
         width: 100%;
         order: 2;
-        max-height: 280px;
+        max-height: 400px;
+        /* 増やして一覧を見やすく */
+        padding: 15px;
+        /* パディングを減らしてスペース確保 */
     }
 
     .question-main {
         order: 1;
-        padding: 25px;
+        padding: 15px;
+        /* メインもパディング調整 */
     }
 
     .result-summary {

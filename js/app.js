@@ -88,35 +88,83 @@ $(document).ready(function () {
     // 初期化：モードに応じて試験開始
     // =====================================
 
-    switch (mode) {
-        case 'exam1':
-            startExam('exam1', '模擬試験 1');
-            break;
-        case 'exam2':
-            startExam('exam2', '模擬試験 2');
-            break;
-        case 'exam3':
-            startExam('exam3', '模擬試験 3');
-            break;
-        case 'random':
-            startRandomExam();
-            break;
-        case 'single':
-            startSingleMode();
-            break;
-        default:
-            window.location.href = 'index.html';
+    // =====================================
+    // 初期化：モードに応じて試験開始
+    // =====================================
+
+    // ローディング表示
+    const $loading = $('<div id="app-loading" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(255,255,255,0.8);z-index:9999;display:flex;justify-content:center;align-items:center;font-size:1.5rem;font-weight:bold;color:var(--primary-color);">Loading...</div>');
+    $('body').append($loading);
+
+    let questions = [];
+
+    // データ取得と初期化
+    (async function init() {
+        try {
+            if (['exam1', 'exam2', 'exam3'].includes(mode)) {
+                // 試験IDから数字部分を抽出 (exam1 -> "1")
+                const examId = mode.replace('exam', '');
+                questions = await DB.fetchQuestionsByExamId(examId);
+
+                if (questions.length === 0) {
+                    throw new Error('No questions found');
+                }
+
+                let title = `模擬試験 ${examId}`;
+                startExam(mode, title, questions);
+
+            } else if (mode === 'random') {
+                // 全問題からランダムに50問
+                const allQuestions = await DB.fetchAllQuestions();
+                questions = formatQuestionsAndShuffle(allQuestions, 50);
+                startRandomExam(questions);
+
+            } else if (mode === 'single') {
+                // 全問題からランダム（一問一答） - 件数制限なし
+                const allQuestions = await DB.fetchAllQuestions();
+                questions = formatQuestionsAndShuffle(allQuestions, null);
+                startSingleMode(questions);
+            }
+
+        } catch (error) {
+            console.error('Initialization error:', error);
+            alert(`データの読み込みに失敗しました。\nエラー詳細: ${error.message || error}`);
+            // window.location.href = 'index.html'; // デバッグ用にリダイレクトを一時停止
+        } finally {
+            $loading.remove();
+        }
+    })();
+
+    // データを整形・シャッフル（limitがnullなら全件）
+    function formatQuestionsAndShuffle(allQuestions, limit) {
+        // App用フォーマットに変換
+        const formatted = DB.formatQuestions(allQuestions);
+
+        // シャッフル
+        for (let i = formatted.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [formatted[i], formatted[j]] = [formatted[j], formatted[i]];
+        }
+
+        // 指定があれば件数を制限、なければ全件
+        const result = limit ? formatted.slice(0, limit) : formatted;
+
+        // IDを振り直す
+        return result.map((q, idx) => ({
+            ...q,
+            id: idx + 1
+        }));
     }
 
     // =====================================
-    // 試験開始
+    // 試験開始処理
     // =====================================
 
-    function startExam(examKey, examTitle) {
+    function startExam(examKey, examTitle, questionData) {
         state.currentExam = examKey;
         state.currentMode = 'exam';
         state.currentQuestionIndex = 0;
-        state.questions = [...examData[examKey]];
+        state.questions = questionData;
         state.answers = {};
         state.flags = {};
 
@@ -129,26 +177,11 @@ $(document).ready(function () {
         startTimer();
     }
 
-    function startRandomExam() {
+    function startRandomExam(questionData) {
         state.currentExam = 'random';
         state.currentMode = 'exam';
         state.currentQuestionIndex = 0;
-
-        const allQuestions = [
-            ...examData.exam1,
-            ...examData.exam2,
-            ...examData.exam3
-        ];
-
-        for (let i = allQuestions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
-        }
-
-        state.questions = allQuestions.slice(0, 50).map((q, idx) => ({
-            ...q,
-            id: idx + 1
-        }));
+        state.questions = questionData;
         state.answers = {};
         state.flags = {};
 
@@ -161,33 +194,20 @@ $(document).ready(function () {
         startTimer();
     }
 
-    function startSingleMode() {
+    function startSingleMode(questionData) {
+        state.currentExam = 'single';
         state.currentMode = 'single';
         state.currentQuestionIndex = 0;
-
-        const allQuestions = [
-            ...examData.exam1,
-            ...examData.exam2,
-            ...examData.exam3
-        ];
-
-        for (let i = allQuestions.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [allQuestions[i], allQuestions[j]] = [allQuestions[j], allQuestions[i]];
-        }
-
-        state.questions = allQuestions.map((q, idx) => ({
-            ...q,
-            id: idx + 1
-        }));
+        state.questions = questionData;
         state.answers = {};
 
         $('#single-total').text(state.questions.length);
+
         showSingleQuestion(0);
         showScreen('single-screen');
-        // 1問1答モードではタイマー非表示
-        $('#timer-display').hide();
     }
+
+
 
     // =====================================
     // 問題番号ボタン描画
@@ -238,6 +258,9 @@ $(document).ready(function () {
     // =====================================
 
     function showQuestion(index) {
+        // 画面上部へスクロール（モバイル対策）
+        window.scrollTo(0, 0);
+
         state.currentQuestionIndex = index;
         const question = state.questions[index];
 
@@ -453,6 +476,9 @@ $(document).ready(function () {
     // =====================================
 
     function showResults() {
+        // 画面上部へスクロール
+        window.scrollTo(0, 0);
+
         let correct = 0;
         let incorrect = 0;
 
@@ -472,6 +498,20 @@ $(document).ready(function () {
         else if (state.currentExam === 'exam2') examName = '模擬試験 2';
         else if (state.currentExam === 'exam3') examName = '模擬試験 3';
         else if (state.currentExam === 'random') examName = 'ランダム出題';
+        else if (state.currentExam === 'single') examName = '1問1答';
+
+        // ログイン済みなら結果を保存
+        Auth.getCurrentUser().then(user => {
+            if (user) {
+                DB.saveExamResult(
+                    user.id,
+                    state.currentExam,
+                    correct,
+                    state.questions.length,
+                    percentage
+                );
+            }
+        });
 
         $('#result-exam-name').text(examName);
         $('#correct-count').text(correct);

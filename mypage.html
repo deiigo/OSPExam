@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outsystems模擬試験サイト - マイページ</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* マイページ固有のスタイル（後でstyle.cssに移動しても良い） */
+        .mypage-header {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile-large {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-profile-large img {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            border: 2px solid var(--primary-color);
+        }
+
+        .user-profile-large h2 {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .history-table-container {
+            background: var(--bg-card);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: var(--shadow-card);
+        }
+
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .history-table th,
+        .history-table td {
+            padding: 15px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .history-table th {
+            background: var(--bg-card-hover);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .score-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .score-high {
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success-color);
+        }
+
+        .score-mid {
+            background: rgba(234, 179, 8, 0.15);
+            color: var(--warning-color);
+        }
+
+        .score-low {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger-color);
+        }
+
+        @media (max-width: 600px) {
+
+            .history-table th:nth-child(3),
+            .history-table td:nth-child(3) {
+                /* 正解数カラムを隠す */
+                display: none;
+            }
+
+            .history-table th,
+            .history-table td {
+                padding: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header"
+            style="display: flex; justify-content: space-between; padding: 15px 20px; align-items: center;">
+            <a href="index.html" class="back-home-btn"
+                style="text-decoration: none; color: var(--primary-color); font-weight: 600;">
+                <i class="fa-solid fa-arrow-left"></i> ホームに戻る
+            </a>
+
+            <div id="user-info" style="display: flex; align-items: center; gap: 10px;">
+                <img id="header-avatar" src="" alt="User" style="width: 32px; height: 32px; border-radius: 50%;">
+                <span id="header-name" style="font-weight: 500;"></span>
+                <button onclick="Auth.signOut()" class="auth-btn logout"
+                    style="padding: 5px 12px; font-size: 0.85rem; border: 1px solid var(--card-border); background: var(--bg-card); border-radius: 4px; cursor: pointer;">ログアウト</button>
+            </div>
+        </header>
+
+        <section class="screen active" style="max-width: 900px; margin: 0 auto; padding: 40px 20px;">
+            <div class="mypage-header">
+                <div class="user-profile-large">
+                    <img id="page-avatar" src="images/default_user.png" alt="Profile">
+                    <div>
+                        <h2 id="page-name">ロード中...</h2>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="section-title" style="margin-bottom: 20px;">過去の試験結果</h3>
+
+            <div id="loading" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i class="fa-solid fa-spinner fa-spin fa-2x"></i>
+                <p style="margin-top: 10px;">読み込み中...</p>
+            </div>
+
+            <div id="history-container" class="history-table-container" style="display: none;">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>日時</th>
+                            <th>試験問題</th>
+                            <th>正解数</th>
+                            <th>正解率</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list">
+                        <!-- JSで生成 -->
+                    </tbody>
+                </table>
+            </div>
+            <p id="no-history" style="display: none; text-align: center; color: var(--text-muted); padding: 30px;">
+                履歴がありません。
+            </p>
+        </section>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/mypage.js"></script>
+</body>
+
+</html>
