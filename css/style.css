@@ -522,6 +522,31 @@ body::before {
     box-shadow: 0 4px 15px rgba(0, 115, 207, 0.4);
 }
 
+.category-badge {
+    position: absolute;
+    top: -18px;
+    right: 35px;
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    border: 1px solid var(--card-border);
+    padding: 8px 20px;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    box-shadow: var(--shadow-card);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category-badge::before {
+    content: '\f02b';
+    /* Tag icon */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: var(--primary-color);
+}
+
 .question-text {
     font-size: 1.25rem;
     line-height: 2;

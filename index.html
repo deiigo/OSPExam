@@ -18,12 +18,13 @@
         <!-- Auth Header -->
         <header class="main-header" style="display: flex; justify-content: flex-end; padding: 10px 20px;">
             <div id="user-info" style="display: none; align-items: center; gap: 10px;">
-                <a href="mypage.html"
-                    style="display: flex; align-items: center; gap: 8px; text-decoration: none; color: inherit; padding: 4px 8px; border-radius: 4px; transition: background 0.2s;"
-                    onmouseover="this.style.background='rgba(0,0,0,0.05)'"
-                    onmouseout="this.style.background='transparent'">
+                <div style="display: flex; align-items: center; gap: 8px; margin-right: 10px;">
                     <img id="user-avatar" src="" alt="User" style="width: 32px; height: 32px; border-radius: 50%;">
                     <span id="user-name" style="font-weight: 500;"></span>
+                </div>
+                <a href="mypage.html" class="auth-btn"
+                    style="text-decoration: none; padding: 5px 12px; font-size: 0.85rem; border: 1px solid var(--primary-color); background: var(--primary-color); color: white; border-radius: 4px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                    <i class="fa-solid fa-user"></i> マイページ
                 </a>
                 <button onclick="Auth.signOut()" class="auth-btn logout"
                     style="padding: 5px 12px; font-size: 0.85rem; border: 1px solid var(--card-border); background: var(--bg-card); border-radius: 4px; cursor: pointer;">ログアウト</button>

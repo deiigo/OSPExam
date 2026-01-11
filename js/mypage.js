@@ -64,6 +64,11 @@ async function loadExamHistory(userId) {
                     <td>${mode}</td>
                     <td>${result.score} / ${result.total_questions}</td>
                     <td><span class="score-badge ${scoreClass}">${result.correct_rate}%</span></td>
+                    <td>
+                        <a href="exam.html?mode=review&id=${result.id}" class="review-btn" style="text-decoration:none; color:var(--primary-color); font-weight:500;">
+                            <i class="fa-solid fa-list-check"></i> 確認
+                        </a>
+                    </td>
                 </tr>
             `;
             $tbody.append(row);

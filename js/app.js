@@ -124,6 +124,16 @@ $(document).ready(function () {
                 const allQuestions = await DB.fetchAllQuestions();
                 questions = formatQuestionsAndShuffle(allQuestions, null);
                 startSingleMode(questions);
+
+            } else if (mode === 'review') {
+                // 復習モード（過去の結果を表示）
+                const resultId = urlParams.get('id');
+                if (!resultId) throw new Error('Result ID not specified');
+
+                const resultDetails = await DB.fetchExamResultDetails(resultId);
+                if (!resultDetails) throw new Error('Review data not found');
+
+                startReviewMode(resultDetails);
             }
 
         } catch (error) {
@@ -207,6 +217,52 @@ $(document).ready(function () {
         showScreen('single-screen');
     }
 
+    function startReviewMode(data) {
+        state.currentExam = data.result.exam_mode;
+        state.currentMode = 'review'; // 復習モード
+        state.questions = data.questions;
+        state.answers = {};
+
+        // 回答データを復元
+        state.questions.forEach((q, idx) => {
+            if (q.userAnswer !== null) {
+                state.answers[idx] = q.userAnswer;
+            }
+        });
+
+        $('#exam-title').text(`復習: ${data.result.created_at.slice(0, 10)} 実施分`);
+        $('#total-questions').text(state.questions.length);
+
+        // 結果画面を直接表示するための計算
+        let correct = 0;
+        let incorrect = 0;
+        state.questions.forEach((q) => {
+            // isCorrectプロパティがDBから取得されているのでそれを使用
+            if (q.isCorrect) correct++;
+            else incorrect++;
+        });
+
+        // 状態をセットしたら直接結果画面へ遷移
+        const percentage = data.result.correct_rate; // DB保存値を使用
+
+        let examName = '模擬試験';
+        if (state.currentExam === 'exam1') examName = '模擬試験 1';
+        else if (state.currentExam === 'exam2') examName = '模擬試験 2';
+        else if (state.currentExam === 'exam3') examName = '模擬試験 3';
+        else if (state.currentExam === 'random') examName = 'ランダム出題';
+        else if (state.currentExam === 'single') examName = '1問1答';
+
+        $('#result-exam-name').text(examName);
+        $('#correct-count').text(correct);
+        $('#incorrect-count').text(incorrect);
+        $('#percentage').text(percentage);
+
+        renderChart(correct, incorrect);
+        renderDetailsList();
+
+        showScreen('result-screen');
+    }
+
 
 
     // =====================================
@@ -274,6 +330,12 @@ $(document).ready(function () {
             $('#question-image-container').show();
         } else {
             $('#question-image-container').hide();
+        }
+
+        if (question.category) {
+            $('#question-category').text(question.category).show();
+        } else {
+            $('#question-category').hide();
         }
 
         const $choices = $('#choices-container');
@@ -503,12 +565,24 @@ $(document).ready(function () {
         // ログイン済みなら結果を保存
         Auth.getCurrentUser().then(user => {
             if (user) {
+                // 詳細データの作成
+                const details = state.questions.map((q, idx) => {
+                    const userAnswer = state.answers[idx];
+                    const isCorrect = userAnswer === q.correct;
+                    return {
+                        id: q.db_id || q.id, // DB上のIDを使用（なければ表示ID）
+                        userAnswer: userAnswer !== undefined ? userAnswer : null,
+                        isCorrect: isCorrect
+                    };
+                });
+
                 DB.saveExamResult(
                     user.id,
                     state.currentExam,
                     correct,
                     state.questions.length,
-                    percentage
+                    percentage,
+                    details
                 );
             }
         });
@@ -584,6 +658,11 @@ $(document).ready(function () {
         const userAnswer = state.answers[idx];
 
         $('#modal-title').text(`Q.${idx + 1}`);
+        if (question.category) {
+            $('#modal-category').text(question.category).show();
+        } else {
+            $('#modal-category').hide();
+        }
         $('#modal-question').text(question.question);
 
         // 画像の表示制御
